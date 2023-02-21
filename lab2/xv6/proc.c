@@ -88,6 +88,8 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->prior_val = 31;    // Kevin Prada - Initializing Priority Value to 31
+                        // Range for priority is [0, 31]. 31 is lowest priority
 
   release(&ptable.lock);
 
@@ -199,6 +201,9 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+
+  // Initialize child's priority value to parent's
+  np->prior_val = curproc->prior_val;     // Kevin Prada
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
