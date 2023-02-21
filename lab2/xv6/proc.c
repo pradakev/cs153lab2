@@ -88,7 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->prior_val = 31;    // Kevin Prada - Initializing Priority Value to 31
+  p->prior_val = 0;    // Kevin Prada - Initializing Priority Value to 31
                         // Range for priority is [0, 31]. 31 is lowest priority
 
   release(&ptable.lock);
@@ -536,4 +536,13 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int 
+setpriority(int prior_val){
+  struct proc *curproc = myproc();
+  curproc->prior_val = prior_val;
+  yield();
+  
+  return 1;
 }
