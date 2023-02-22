@@ -330,17 +330,40 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+
+  int maxPriority = 32;   // KP Priority value to compare to
+  struct proc *priorityProc;  // KP Store priority process
   
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
+    //
+    // Instead of round robin looping through all processes,
+    // I loop through all processes to find the highest priority first.
+    // After using that for loop, I've found the highest priority
+    // and run that process.
+    // If no runnable processes are found, I release the table lock
+    // and continue (the outer for(;;) loop loops always) 
+    //
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-
+      if(p->prior_val < maxPriority)  // KP lines 354 - 364
+      {
+        maxPriority = p->prior_val;
+        priorityProc = p;
+      }
+    }
+      if(maxPriority == 32)
+      {
+        release(&ptable.lock);
+        continue;
+      }
+        
+      p = priorityProc;
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -353,8 +376,12 @@ scheduler(void)
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
+
+      // KP lines 381 - 383
       c->proc = 0;
-    }
+      maxPriority = 32;
+      priorityProc = 0;
+    
     release(&ptable.lock);
 
   }
