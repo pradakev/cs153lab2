@@ -351,18 +351,32 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+      
       if(p->prior_val < maxPriority)  // KP lines 354 - 364
       {
         maxPriority = p->prior_val;
         priorityProc = p;
       }
+
+      // If a process is runnable, increase its priority to
+      // avoid starvation - Kevin Prada
+      // Make this after the priority val storage!
+      if(p->prior_val >= 1)
+      {
+        p->prior_val = p->prior_val - 1;
+      }
+      // If priority value is zero, leave as is.
     }
       if(maxPriority == 32)
       {
         release(&ptable.lock);
         continue;
       }
-        
+
+      // Here, we need to decrease the value of the priority process
+      // Since we already subtracted one, we need to add two
+      priorityProc->prior_val = priorityProc->prior_val + 2;
+      
       p = priorityProc;
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
