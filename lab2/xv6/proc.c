@@ -88,8 +88,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->prior_val = 0;    // Kevin Prada - Initializing Priority Value to 31
+  p->prior_val = 10;    // Kevin Prada - Initializing Priority Value to 31
                         // Range for priority is [0, 31]. 31 is lowest priority
+  p->T_burst = 0;     // KP
 
   release(&ptable.lock);
 
@@ -204,6 +205,7 @@ fork(void)
 
   // Initialize child's priority value to parent's
   np->prior_val = curproc->prior_val;     // Kevin Prada
+  np->T_burst = 0;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -235,6 +237,7 @@ exit(void)
   struct proc *curproc = myproc();
   struct proc *p;
   int fd;
+  
 
   if(curproc == initproc)
     panic("init exiting");
@@ -268,6 +271,16 @@ exit(void)
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
+
+  curproc->T_finish = ticks; // KP set finish time
+  // print turnaround "turnaround = tfinish-tstart"
+  // print waiting time = turnaround - burst
+  uint turnaround = curproc->T_finish - curproc->T_start;
+  cprintf("Turnaround time: %d\n", turnaround);
+  uint waitingTime = turnaround - curproc->T_burst;
+  cprintf("Waiting time: %d\n", waitingTime);
+
+
   sched();
   panic("zombie exit");
 }
@@ -375,7 +388,13 @@ scheduler(void)
 
       // Here, we need to decrease the value of the priority process
       // Since we already subtracted one, we need to add two
-      priorityProc->prior_val = priorityProc->prior_val + 2;
+      if(priorityProc->prior_val == 0){
+        priorityProc->prior_val = priorityProc->prior_val + 1;
+      }
+      else{
+        // offset bcus we subtracted 1 from all processes
+        priorityProc->prior_val = priorityProc->prior_val + 2;
+      }
       
       p = priorityProc;
       // Switch to chosen process.  It is the process's job
@@ -384,6 +403,9 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+
+      // burst time = running tick 
+      p->T_burst = p->T_burst + 1;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -394,6 +416,7 @@ scheduler(void)
       // KP lines 381 - 383
       c->proc = 0;
       maxPriority = 32;
+      // here setting ptr to "NULL" or zero
       priorityProc = 0;
     
     release(&ptable.lock);

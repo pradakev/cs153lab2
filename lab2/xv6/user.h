@@ -24,7 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 
-int setpriority(void); // Kevin Prada
+int setpriority(int); // Kevin Prada
 
 // ulib.c
 int stat(const char*, struct stat*);

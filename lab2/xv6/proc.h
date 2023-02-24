@@ -51,6 +51,9 @@ struct proc {
   char name[16];               // Process name (debugging)
 
   int prior_val;                // Kevin Prada - Add priority value to a process
+  uint T_start;                 // KP
+  uint T_finish;                // KP
+  uint T_burst;                 // KP
 };
 
 // Process memory is laid out contiguously, low addresses first:

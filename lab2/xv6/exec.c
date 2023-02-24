@@ -101,6 +101,9 @@ exec(char *path, char **argv)
   curproc->tf->esp = sp;
   switchuvm(curproc);
   freevm(oldpgdir);
+
+  //  Kevin Prada
+  curproc->T_start = ticks;
   return 0;
 
  bad:

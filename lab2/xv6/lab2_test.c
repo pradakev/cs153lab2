@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     PScheduler();
 
-    exit(0);
+    exit();
 }    
       
 int PScheduler(void){
@@ -16,7 +16,7 @@ int PScheduler(void){
     // 0 is the highest priority. All processes have a default priority of 10
     // You can use your own priority range/value setup
 
-    int pid, ret_pid, exit_status;
+    int pid, ret_pid;
     int i,j,k;
   
     printf(1, "Testing the priority scheduler and setpriority system call:\n");
@@ -38,17 +38,17 @@ int PScheduler(void){
                 }
             }
             printf(1, " - Child #%d with priority %d has finished! \n", getpid(), 30-10*i);		
-            exit(0);
+            exit();
         } else {
             printf(2," \n Error fork() \n");
-            exit(-1);
+            exit();
         }
     }
 
     if(pid > 0) {
         for (i = 0; i < 3; i++) {
-            ret_pid = wait(&exit_status);
-            printf(1, " - This is the parent: child with PID# %d has finished with status %d \n", ret_pid, exit_status);
+            ret_pid = wait();
+            printf(1, " - This is the parent: child with PID# %d has finished \n", ret_pid);
         }
         printf(1, " - If processes with highest priority finished first then its correct. \n");
     }
