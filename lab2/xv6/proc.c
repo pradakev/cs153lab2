@@ -88,7 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->prior_val = 10;    // Kevin Prada - Initializing Priority Value to 31
+  p->prior_val = 10;    // Kevin Prada - Initializing Priority Value to 10 
                         // Range for priority is [0, 31]. 31 is lowest priority
   p->T_burst = 0;     // KP
 
@@ -371,10 +371,12 @@ scheduler(void)
         priorityProc = p;
       }
 
+      // AGING 
+
       // If a process is runnable, increase its priority to
       // avoid starvation - Kevin Prada
       // Make this after the priority val storage!
-      if(p->prior_val >= 1)
+      // if(p->prior_val >= 1)
       {
         p->prior_val = p->prior_val - 1;
       }
@@ -386,17 +388,36 @@ scheduler(void)
         continue;
       }
 
+      // AGING 
+      // 1 4 8
+      // 0 3 7
+      // 2 3 7
+      // 3 2 6
+
+      // 0 4 9
+      // 1 3 8
+      // 0 2 7
+
       // Here, we need to decrease the value of the priority process
       // Since we already subtracted one, we need to add two
-      if(priorityProc->prior_val == 0){
-        priorityProc->prior_val = priorityProc->prior_val + 1;
-      }
-      else{
+      // if(priorityProc->prior_val == 0){
+      //   priorityProc->prior_val = priorityProc->prior_val + 1;
+      // }
+      // else{
         // offset bcus we subtracted 1 from all processes
         priorityProc->prior_val = priorityProc->prior_val + 2;
-      }
+      // }
+
+      // to check aging, print out priority in scheduler
+      // in each iteration print out the priority value of each proc
+      // print it out to prove it since there's no test file!!!
       
       p = priorityProc;
+
+      // DEBUG
+      cprintf("Currently Running PID: %d\n", p->pid);
+      cprintf("Priority: %d\n", p->prior_val);
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
